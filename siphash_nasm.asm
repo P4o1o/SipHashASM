@@ -78,7 +78,7 @@ MessageLoadLoopEnd_2_4:
 	add rcx, rsi
 LastMessagePart_2_4:
 	dec rcx
-	movzx rdi, [rcx]
+	movzx rdi, byte [rcx]
 	or rax, rdi
 	dec rsi
 	jz LastMessagePartEnd_2_4
@@ -161,7 +161,7 @@ MessageLoadLoopEnd_4_8:
 	add rcx, rsi
 LastMessagePart_4_8:
 	dec rcx
-	movzx rdi, [rcx]
+	movzx rdi, byte [rcx]
 	shl rax, 8
 	or rax, rdi
 	dec rsi
