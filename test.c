@@ -682,7 +682,7 @@ int main() {
         }
         uint64_t res = siphash_2_4(in[i], i, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
         if (res != vectoqword(vectors_sip64[i])) {
-            printf("fail for vector %d, get %llx, right one %llx\n", i, res, vectoqword(vectors_sip64[i]));
+            printf("fail for vector %d\n", i);
             fails++;
             any_failed = true;
         }
