@@ -59,32 +59,32 @@ siphash_2_4:
 
 ; COMPRESSION
 	dec rdi ; last cicle after the loop
-	jz MessageLoadLoopEnd
-MessageLoadLoop:
-	mov rax, qword ptr [rcx]
+	jz MessageLoadLoopEnd_2_4
+MessageLoadLoop_2_4:
+	mov rax, [rcx]
 	xor r9, rax
 	SipRound
 	SipRound
 	xor r10, rax
 	add rcx, 8
 	dec rdi
-	jnz MessageLoadLoop
-MessageLoadLoopEnd:
+	jnz MessageLoadLoop_2_4
+MessageLoadLoopEnd_2_4:
 	
 	mov rax, 0
 	mov rsi, rdx
 	and rsi, 7		; rsi = mess_len % 8
-	jz LastMessagePartEnd
+	jz LastMessagePartEnd_2_4
 	add rcx, rsi
-LastMessagePart:
+LastMessagePart_2_4:
 	dec rcx
-	movzx rdi, byte ptr [rcx]
+	movzx rdi, [rcx]
 	or rax, rdi
 	dec rsi
-	jz LastMessagePartEnd
+	jz LastMessagePartEnd_2_4
 	shl rax, 8
-	jmp LastMessagePart
-LastMessagePartEnd:
+	jmp LastMessagePart_2_4
+LastMessagePartEnd_2_4:
 	movzx rdi, dl
 	shl rdi, 56
 	or rax, rdi
@@ -138,9 +138,9 @@ siphash_4_8:
 
 ; COMPRESSION
 	dec rdi ; last cicle after the loop
-	jz MessageLoadLoopEnd
-MessageLoadLoop:
-	mov rax, qword ptr [rcx]
+	jz MessageLoadLoopEnd_4_8
+MessageLoadLoop_4_8:
+	mov rax, [rcx]
 	xor r9, rax
 	
 	SipRound
@@ -151,22 +151,22 @@ MessageLoadLoop:
 	xor r10, rax
 	add rcx, 8
 	dec rdi
-	jnz MessageLoadLoop
-MessageLoadLoopEnd:
+	jnz MessageLoadLoop_4_8
+MessageLoadLoopEnd_4_8:
 
 	mov rax, 0
 	mov rsi, rdx
 	and rsi, 7		; rsi = mess_len % 8
-	je LastMessagePartEnd
+	je LastMessagePartEnd_4_8
 	add rcx, rsi
-LastMessagePart:
+LastMessagePart_4_8:
 	dec rcx
-	movzx rdi, byte ptr [rcx]
+	movzx rdi, [rcx]
 	shl rax, 8
 	or rax, rdi
 	dec rsi
-	jnz LastMessagePart
-LastMessagePartEnd:
+	jnz LastMessagePart_4_8
+LastMessagePartEnd_4_8:
 	movzx rdi, dl
 	shl rdi, 56
 	or rax, rdi
