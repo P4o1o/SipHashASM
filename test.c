@@ -666,75 +666,26 @@ uint8_t in9[] = { 0, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
 uint8_t in10[] = { 0, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x09, 0x08 };
 
 int main() {
-    uint8_t in[64];
     bool any_failed = false;
     uint64_t fails = 0;
-    uint64_t res;
-    res = siphash_2_4(NULL, 0, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[0])) {
-        printf("fail for 0 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[0]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in1, 1, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[1])) {
-        printf("fail for 1 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[1]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in2, 2, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[2])) {
-        printf("fail for 2 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[2]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in3, 3, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[3])) {
-        printf("fail for 3 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[3]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in4, 4, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[4])) {
-        printf("fail for 4 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[4]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in5, 5, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[5])) {
-        printf("fail for 5 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[5]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in6, 6, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[6])) {
-        printf("fail for 6 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[6]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in7, 7, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[7])) {
-        printf("fail for 7 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[7]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in8, 8, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[8])) {
-        printf("fail for 8 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[8]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in9, 9, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[9])) {
-        printf("fail for 9 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[9]));
-        fails++;
-        any_failed = true;
-    }
-    res = siphash_2_4(in10, 10, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
-    if (res != vectoqword(vectors_sip64[10])) {
-        printf("fail for 10 bytes, get %llx, right one %llx\n", res, vectoqword(vectors_sip64[10]));
-        fails++;
-        any_failed = true;
+    uint8_t **in = malloc(sizeof(uint8_t *) * 64);
+    if (in == NULL)
+        exit(-1);
+    for (int i = 0; i < 64; i++) {
+        if (i) {
+            in[i] = malloc(i);
+            if (in[i] == NULL)
+                exit(-1);
+            for (int j = 0; j < i; j++) {
+                in[i][j] = (uint8_t) j;
+            }
+        }
+        uint64_t res = siphash_2_4(in[i], i, 0x0706050403020100ULL, 0x0f0e0d0c0b0a0908ULL);
+        if (res != vectoqword(vectors_sip64[i])) {
+            printf("fail for vector %d, get %llx, right one %llx\n", i, res, vectoqword(vectors_sip64[i]));
+            fails++;
+            any_failed = true;
+        }
     }
     if (!fails)
         printf("OK\n");

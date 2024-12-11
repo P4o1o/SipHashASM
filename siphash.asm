@@ -69,16 +69,17 @@ MessageLoadLoop:
 MessageLoadLoopEnd:
 	
 	mov rax, 0
-	mov rsi, rdx					; rsi = mess_len % 8
-	and rsi, 7						; rsi loop counter
+	mov rsi, rdx
+	and rsi, 7		; rsi = mess_len % 8
 	jz LastMessagePartEnd
+	add rcx, rsi
 LastMessagePart:
+	dec rcx
 	movzx rdi, byte ptr [rcx]
 	or rax, rdi
 	dec rsi
 	jz LastMessagePartEnd
 	shl rax, 8
-	add rcx, 1
 	jmp LastMessagePart
 LastMessagePartEnd:
 	movzx rdi, dl
