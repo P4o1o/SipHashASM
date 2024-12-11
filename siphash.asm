@@ -1,10 +1,21 @@
 .data
-bigval1 dq 06c7967656e657261h
-bigval2 dq 07465646279746573h
+v2 dq 06c7967656e657261h
+v3 dq 07465646279746573h
 
 .code
 
-SipRound proc
+InitMainValues MACRO
+    mov r10, 0736f6d6570736575h
+    xor r10, r8		; r10 = v0 ^ key0
+    
+    mov r11, 0646f72616e646f6dh
+    xor r11, r9		; r11 = v1 ^ key1
+    
+    xor r8, [v2]	; r8 = key0 ^ v2
+    xor r9, [v3]	; r9 = key1 ^ v3
+ENDM
+
+SipRound MACRO
 	add r10, r11	; v0 += v1
 	rol r11, 13		; v1 <<= 13
 	xor r11, r10	; v1 ^= v0
@@ -20,8 +31,13 @@ SipRound proc
 	add r10, r9		; v0 += v3
 	rol r9, 21		; v3 <<= 21
 	xor r9, r10		; v3 ^= v0
-	ret
-SipRound endp
+ENDM
+
+RepeatSipRound MACRO count
+    REPT count
+        SipRound
+    ENDM
+ENDM
 
 siphash_2_4 proc
 	; RCX message ptr [byte]
@@ -31,27 +47,18 @@ siphash_2_4 proc
 	
 
 ; INITIALIZATION
-	mov r10, 0736f6d6570736575h
-	xor r10, r8							; r10	v0
 
-	mov r11, 0646f72616e646f6dh
-	xor r11, r9							; r11	v1
-
-	xor r8, [bigval1]					; r8	v2
-
-	xor r9, [bigval2]					; r9	v3
+	InitMainValues
 
 	mov rsi, rdx							; sup[(rdx + 1) / 8] = rdi quotient, rsi remainder
 	inc rsi								
 	mov rdi, rsi
 	shr rdi, 3
 
-	push rbx
-	mov rbx, 1
+	mov r12, 1
 	mov rax, 0
 	and rsi, 7							; remainder rsi
-	cmovnz rax, rbx
-	pop rbx
+	cmovnz rax, r12
 	add rdi, rax						; rdi loop counter
 
 ; COMPRESSION
@@ -60,8 +67,7 @@ siphash_2_4 proc
 MessageLoadLoop:
 	mov rax, qword ptr [rcx]
 	xor r9, rax
-	call SipRound
-	call SipRound
+	RepeatSipRound 2
 	xor r10, rax
 	add rcx, 8
 	dec rdi
@@ -88,8 +94,7 @@ LastMessagePartEnd:
 
 	xor r9, rax
 
-	call SipRound
-	call SipRound
+	RepeatSipRound 2
 	
 	xor r10, rax
 
@@ -98,10 +103,7 @@ LastMessagePartEnd:
 
 	xor r8, 0FFh
 
-	call SipRound
-	call SipRound
-	call SipRound
-	call SipRound
+	RepeatSipRound 4
 
 	xor r8, r9
 	xor r8, r10
@@ -120,27 +122,18 @@ siphash_4_8 proc
 	
 
 ; INITIALIZATION
-	mov r10, 0736f6d6570736575h
-	xor r10, r8							; r10	v0
-
-	mov r11, 0646f72616e646f6dh
-	xor r11, r9							; r11	v1
-
-	xor r8, [bigval1]					; r8	v2
-
-	xor r9, [bigval2]					; r9	v3
+	
+	InitMainValues
 
 	mov rsi, rdx							; sup[(rsi + 1) / 8] = rdi quotient, rsi remainder
 	inc rsi								
 	mov rdi, rsi
 	shl rdi, 3
 
-	push rbx
-	mov rbx, 1
+	mov r12, 1
 	mov rax, 0
 	and rsi, 7							; remainder rsi
-	cmovnz rax, rbx
-	pop rbx
+	cmovnz rax, r12
 	add rdi, rax						; rdi loop counter
 
 ; COMPRESSION
@@ -150,10 +143,7 @@ MessageLoadLoop:
 	mov rax, qword ptr [rcx]
 	xor r9, rax
 	
-	call SipRound
-	call SipRound
-	call SipRound
-	call SipRound
+	RepeatSipRound 4
 	
 	xor r10, rax
 	add rcx, 8
@@ -161,14 +151,16 @@ MessageLoadLoop:
 	jnz MessageLoadLoop
 MessageLoadLoopEnd:
 
-	cmp rsi, 0						; rsi loop counter
-	je LastMessagePartEnd
 	mov rax, 0
+	mov rsi, rdx
+	and rsi, 7		; rsi = mess_len % 8
+	je LastMessagePartEnd
+	add rcx, rsi
 LastMessagePart:
+	dec rcx
 	movzx rdi, byte ptr [rcx]
-	or rax, rdi
 	shl rax, 8
-	add rcx, 1
+	or rax, rdi
 	dec rsi
 	jnz LastMessagePart
 LastMessagePartEnd:
@@ -178,11 +170,7 @@ LastMessagePartEnd:
 
 	xor r9, rax
 	
-
-	call SipRound
-	call SipRound
-	call SipRound
-	call SipRound
+	RepeatSipRound 4
 
 	xor r10, rax
 
@@ -192,15 +180,7 @@ LastMessagePartEnd:
 	xor r8, 0FFh
 
 
-	call SipRound
-	call SipRound
-	call SipRound
-	call SipRound
-
-	call SipRound
-	call SipRound
-	call SipRound
-	call SipRound
+	RepeatSipRound 8
 
 	xor r8, r9
 	xor r8, r10
