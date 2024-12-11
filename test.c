@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <windows.h>
 #include "siphash.h"
 
 #define vectoqword(vec) (((uint64_t)vec[7] << 56) | ((uint64_t)vec[6] << 48) | ((uint64_t)vec[5] << 40) | ((uint64_t)vec[4] << 32) | ((uint64_t)vec[3] << 24) | ((uint64_t)vec[2] << 16) | ((uint64_t)vec[1] << 8) | (uint64_t)vec[0])
