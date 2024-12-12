@@ -21,10 +21,10 @@ The code includes a simple **C test file** to check the correctness.
 
 int main() {
     const char *message = "Test message";
-    unsigned long long key0 = 0x0706050403020100;
-    unsigned long long key1 = 0x1F1E1D1C1B1A1918;
+    uint64_t key0 = 0x0706050403020100;
+    uint64_t key1 = 0x1F1E1D1C1B1A1918;
 
-    unsigned long long hash = siphash_2_4((unsigned char *)message, strlen(message), key0, key1);
+    uint64_t hash = siphash_2_4((uint8_t *)message, strlen(message), key0, key1);
     printf("Hash: %llx\n", hash);
     
     return 0;
