@@ -1,20 +1,19 @@
-section .data
-v2 dq 0x06c7967656e657261
-v3 dq 0x07465646279746573
-
 section .text
 global siphash_2_4
 global siphash_4_8
 
 %macro InitMainValues 0
     mov r10, 0x0736f6d6570736575   ; r10 = v0
-    xor r10, r8                     ; r10 = v0 ^ key0
+    xor r10, rdx                     ; r10 = v0 ^ key0
     
     mov r11, 0x0646f72616e646f6d   ; r11 = v1
-    xor r11, r9                     ; r11 = v1 ^ key1
-    
-    xor r8, [v2]                    ; r8 = key0 ^ v2
-    xor r9, [v3]                    ; r9 = key1 ^ v3
+    xor r11, rcx                     ; r11 = v1 ^ key1
+
+    mov r8, 0x06c7967656e657261		; r8 = v2
+    xor r8, rdx                     ; r8 = key0 ^ v2
+
+	mov r9, 0x07465646279746573		; r9 = v3
+    xor r9, rcx                    ; r9 = key1 ^ v3
 %endmacro
 
 %macro SipRound 0
@@ -36,64 +35,64 @@ global siphash_4_8
 %endmacro
 
 siphash_2_4:
-	; RCX message ptr [byte]
-	; RDX mess_len qword unsigned
-	; R8 key0 qword
-	; R9 key1 qword
+	; RDI message ptr [byte]
+	; RSI mess_len qword unsigned
+	; RDX key0 qword
+	; RCX key1 qword
 	
-
 ; INITIALIZATION
-
+	
 	InitMainValues
 
-	mov rsi, rdx							; sup[(rdx + 1) / 8] = rdi quotient, rsi remainder
-	inc rsi								
-	mov rdi, rsi
-	shr rdi, 3
+	mov rdx, rsi							; sup[(rdx + 1) / 8] = rcx quotient, rdx remainder
+	inc rdx								
+	mov rcx, rdx
+	shl rcx, 3
 
 	mov r12, 1
 	mov rax, 0
-	and rsi, 7							; remainder rsi
+	and rdx, 7							; remainder rdx
 	cmovnz rax, r12
-	add rdi, rax						; rdi loop counter
+	add rcx, rax						; rcx loop counter
 
 ; COMPRESSION
-	dec rdi ; last cicle after the loop
+	dec rcx ; last cicle after the loop
 	jz MessageLoadLoopEnd_2_4
 MessageLoadLoop_2_4:
-	mov rax, [rcx]
+	mov rax, qword [rdi]
 	xor r9, rax
+	
 	SipRound
 	SipRound
+	
 	xor r10, rax
-	add rcx, 8
-	dec rdi
+	add rdi, 8
+	dec rcx
 	jnz MessageLoadLoop_2_4
 MessageLoadLoopEnd_2_4:
-	
+
 	mov rax, 0
-	mov rsi, rdx
-	and rsi, 7		; rsi = mess_len % 8
-	jz LastMessagePartEnd_2_4
-	add rcx, rsi
+	mov rdx, rsi
+	and rdx, 7		; rdx = mess_len % 8
+	je LastMessagePartEnd_2_4
+	add rdi, rdx
 LastMessagePart_2_4:
-	dec rcx
-	movzx rdi, byte [rcx]
-	or rax, rdi
-	dec rsi
-	jz LastMessagePartEnd_2_4
+	dec rdi
+	movzx rcx, byte [rdi]
 	shl rax, 8
-	jmp LastMessagePart_2_4
+	or rax, rcx
+	dec rdx
+	jnz LastMessagePart_2_4
 LastMessagePartEnd_2_4:
-	movzx rdi, dl
-	shl rdi, 56
-	or rax, rdi
+	movzx rcx, sil
+	shl rcx, 56
+	or rax, rcx
 
 	xor r9, rax
-
-	SipRound
-	SipRound
 	
+	SipRound
+	SipRound
+
 	xor r10, rax
 
 
@@ -112,35 +111,33 @@ LastMessagePartEnd_2_4:
 	mov rax, r8
 	ret
 
-
-
 siphash_4_8:
-	; RCX message ptr [byte]
-	; RDX mess_len qword unsigned
-	; R8 key0 qword
-	; R9 key1 qword
+	; RDI message ptr [byte]
+	; RSI mess_len qword unsigned
+	; R8 RDX key0 qword
+	; R9 RCX key1 qword
 	
 
 ; INITIALIZATION
 	
 	InitMainValues
 
-	mov rsi, rdx							; sup[(rsi + 1) / 8] = rdi quotient, rsi remainder
-	inc rsi								
-	mov rdi, rsi
-	shl rdi, 3
+	mov rdx, rsi							; sup[(rdx + 1) / 8] = rcx quotient, rdx remainder
+	inc rdx								
+	mov rcx, rdx
+	shl rcx, 3
 
 	mov r12, 1
 	mov rax, 0
-	and rsi, 7							; remainder rsi
+	and rdx, 7							; remainder rdx
 	cmovnz rax, r12
-	add rdi, rax						; rdi loop counter
+	add rcx, rax						; rcx loop counter
 
 ; COMPRESSION
-	dec rdi ; last cicle after the loop
+	dec rcx ; last cicle after the loop
 	jz MessageLoadLoopEnd_4_8
 MessageLoadLoop_4_8:
-	mov rax, [rcx]
+	mov rax, qword[rdi]
 	xor r9, rax
 	
 	SipRound
@@ -149,27 +146,27 @@ MessageLoadLoop_4_8:
 	SipRound
 	
 	xor r10, rax
-	add rcx, 8
-	dec rdi
+	add rdi, 8
+	dec rcx
 	jnz MessageLoadLoop_4_8
 MessageLoadLoopEnd_4_8:
 
 	mov rax, 0
-	mov rsi, rdx
-	and rsi, 7		; rsi = mess_len % 8
+	mov rdx, rsi
+	and rdx, 7		; rdx = mess_len % 8
 	je LastMessagePartEnd_4_8
-	add rcx, rsi
+	add rdi, rdx
 LastMessagePart_4_8:
-	dec rcx
-	movzx rdi, byte [rcx]
+	dec rdi
+	movzx rcx, byte [rdi]
 	shl rax, 8
-	or rax, rdi
-	dec rsi
+	or rax, rcx
+	dec rdx
 	jnz LastMessagePart_4_8
 LastMessagePartEnd_4_8:
-	movzx rdi, dl
-	shl rdi, 56
-	or rax, rdi
+	movzx rcx, sil
+	shl rcx, 56
+	or rax, rcx
 
 	xor r9, rax
 	
