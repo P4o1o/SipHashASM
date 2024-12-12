@@ -47,9 +47,7 @@ siphash_2_4 proc
 	
 
 ; INITIALIZATION
-
 	InitMainValues
-
 	mov rdi, rdx
 	shr rdi, 3
 	jz MessageLoadLoopEnd
@@ -62,38 +60,33 @@ MessageLoadLoop:
 	add rcx, 8
 	dec rdi
 	jnz MessageLoadLoop
+
 MessageLoadLoopEnd:
 	xor rax, rax	; rax = 0
 	mov rsi, rdx
 	and rsi, 7		; rsi = mess_len % 8
 	jz LastMessagePartEnd
 	add rcx, rsi
+
 LastMessagePart:
 	dec rcx
 	movzx rdi, byte ptr [rcx]
+	shl rax, 8
 	or rax, rdi
 	dec rsi
-	jz LastMessagePartEnd
-	shl rax, 8
-	jmp LastMessagePart
+	jnz LastMessagePart
+
 LastMessagePartEnd:
 	movzx rdi, dl
 	shl rdi, 56
 	or rax, rdi
-
 	xor r9, rax
-
 	RepeatSipRound 2
-	
 	xor r10, rax
 
-
 ; FINALIZATION
-
 	xor r8, 0FFh
-
 	RepeatSipRound 4
-
 	xor r8, r9
 	xor r8, r10
 	xor r8, r11
@@ -124,12 +117,14 @@ MessageLoadLoop:
 	add rcx, 8
 	dec rdi
 	jnz MessageLoadLoop
+
 MessageLoadLoopEnd:
 	xor rax, rax	; rax = 0
 	mov rsi, rdx
 	and rsi, 7		; rsi = mess_len % 8
 	je LastMessagePartEnd
 	add rcx, rsi
+
 LastMessagePart:
 	dec rcx
 	movzx rdi, byte ptr [rcx]
@@ -137,6 +132,7 @@ LastMessagePart:
 	or rax, rdi
 	dec rsi
 	jnz LastMessagePart
+
 LastMessagePartEnd:
 	movzx rdi, dl
 	shl rdi, 56
