@@ -50,20 +50,10 @@ siphash_2_4 proc
 
 	InitMainValues
 
-	mov rsi, rdx							; sup[(rdx + 1) / 8] = rdi quotient, rsi remainder
-	inc rsi								
-	mov rdi, rsi
+	mov rdi, rdx
 	shr rdi, 3
-
-	mov r12, 1
-	mov rax, 0
-	and rsi, 7							; remainder rsi
-	cmovnz rax, r12
-	add rdi, rax						; rdi loop counter
-
-; COMPRESSION
-	dec rdi ; last cicle after the loop
 	jz MessageLoadLoopEnd
+
 MessageLoadLoop:
 	mov rax, qword ptr [rcx]
 	xor r9, rax
@@ -73,8 +63,7 @@ MessageLoadLoop:
 	dec rdi
 	jnz MessageLoadLoop
 MessageLoadLoopEnd:
-	
-	mov rax, 0
+	xor rax, rax	; rax = 0
 	mov rsi, rdx
 	and rsi, 7		; rsi = mess_len % 8
 	jz LastMessagePartEnd
@@ -122,36 +111,21 @@ siphash_4_8 proc
 	
 
 ; INITIALIZATION
-	
 	InitMainValues
-
-	mov rsi, rdx							; sup[(rsi + 1) / 8] = rdi quotient, rsi remainder
-	inc rsi								
-	mov rdi, rsi
+	mov rdi, rdx
 	shl rdi, 3
-
-	mov r12, 1
-	mov rax, 0
-	and rsi, 7							; remainder rsi
-	cmovnz rax, r12
-	add rdi, rax						; rdi loop counter
-
-; COMPRESSION
-	dec rdi ; last cicle after the loop
 	jz MessageLoadLoopEnd
+
 MessageLoadLoop:
 	mov rax, qword ptr [rcx]
 	xor r9, rax
-	
 	RepeatSipRound 4
-	
 	xor r10, rax
 	add rcx, 8
 	dec rdi
 	jnz MessageLoadLoop
 MessageLoadLoopEnd:
-
-	mov rax, 0
+	xor rax, rax	; rax = 0
 	mov rsi, rdx
 	and rsi, 7		; rsi = mess_len % 8
 	je LastMessagePartEnd
@@ -167,21 +141,13 @@ LastMessagePartEnd:
 	movzx rdi, dl
 	shl rdi, 56
 	or rax, rdi
-
 	xor r9, rax
-	
 	RepeatSipRound 4
-
 	xor r10, rax
 
-
 ; FINALIZATION
-
 	xor r8, 0FFh
-
-
 	RepeatSipRound 8
-
 	xor r8, r9
 	xor r8, r10
 	xor r8, r11
