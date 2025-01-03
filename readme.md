@@ -31,6 +31,20 @@ int main() {
 }
 ```
 
+## About This Implementation
+
+This project includes an independent implementation of the SipHash algorithm, originally designed by Jean-Philippe Aumasson and Daniel J. Bernstein. SipHash is a cryptographic pseudorandom function optimized for speed on short messages and is free from patent claims, as explicitly stated by its authors.
+
+## Disclaimer
+
+This implementation is not affiliated with or endorsed by the original authors of SipHash. It is provided under MIT license.
+
+## Attribution
+
+This project uses test vectors derived from [SipHash](https://github.com/veorq/SipHash), which is released under the CC0-1.0, MIT, and Apache 2.0 with LLVM exceptions licenses.  
+The test vector values were used solely for verifying the correctness of this implementation.
+
+
 ## References
 - https://www.aumasson.jp/siphash/siphash_slides.pdf
 - Test from https://github.com/veorq/SipHash/blob/master/vectors.h
