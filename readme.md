@@ -33,11 +33,7 @@ int main() {
 
 ## About This Implementation
 
-This project includes an independent implementation of the SipHash algorithm, originally designed by Jean-Philippe Aumasson and Daniel J. Bernstein. SipHash is a cryptographic pseudorandom function optimized for speed on short messages and is free from patent claims, as explicitly stated by its authors.
-
-## Disclaimer
-
-This implementation is not affiliated with or endorsed by the original authors of SipHash. It is provided under MIT license.
+This project includes an independent implementation of the SipHash algorithm, originally designed by Jean-Philippe Aumasson and Daniel J. Bernstein. SipHash is a cryptographic pseudorandom function optimized for speed on short messages and is free from patent claims, as explicitly stated by its authors. This implementation is not affiliated with or endorsed by the original authors of SipHash. It is provided under MIT license.
 
 ## Attribution
 
