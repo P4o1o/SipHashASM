@@ -1,7 +1,24 @@
 .data
 v2 dq 06c7967656e657261h
 v3 dq 07465646279746573h
-
+align 8
+JumpTable_2_4 dq offset Last0_2_4
+              dq offset Last1_2_4
+              dq offset Last2_2_4
+              dq offset Last3_2_4
+              dq offset Last4_2_4
+              dq offset Last5_2_4
+              dq offset Last6_2_4
+              dq offset Last7_2_4
+align 8
+JumpTable_4_8 dq offset Last0_4_8
+              dq offset Last1_4_8
+              dq offset Last2_4_8
+              dq offset Last3_4_8
+              dq offset Last4_4_8
+              dq offset Last5_4_8
+              dq offset Last6_4_8
+              dq offset Last7_4_8
 .code
 
 InitMainValues MACRO
@@ -62,28 +79,41 @@ MessageLoadLoop:
 	jnz MessageLoadLoop
 
 MessageLoadLoopEnd:
-	xor rax, rax	; rax = 0
-	mov rsi, rdx
-	and rsi, 7		; rsi = mess_len % 8
-	jz LastMessagePartEnd
-	add rcx, rsi
-
-LastMessagePart:
-	dec rcx
+	mov rax, rdx
+	shl rax, 56
+	and rdx, 7
+	jmp qword ptr [JumpTable_2_4 + rdx*8]
+Last7_2_4:
+	movzx rdi, byte ptr [rcx + 6]
+	shl rdi, 48
+	or rax, rdi
+Last6_2_4:
+	movzx rdi, byte ptr [rcx + 5]
+	shl rdi, 40
+	or rax, rdi
+Last5_2_4:
+	movzx rdi, byte ptr [rcx + 4]
+	shl rdi, 32
+	or rax, rdi
+Last4_2_4:
+	movzx rdi, byte ptr [rcx + 3]
+	shl rdi, 24
+	or rax, rdi
+Last3_2_4:
+	movzx rdi, byte ptr [rcx + 2]
+	shl rdi, 16
+	or rax, rdi
+Last2_2_4:Example Usage (from C)
+	movzx rdi, byte ptr [rcx + 1]
+	shl rdi, 8
+	or rax, rdi
+Last1_2_4:
 	movzx rdi, byte ptr [rcx]
-	shl rax, 8
 	or rax, rdi
-	dec rsi
-	jnz LastMessagePart
-
-LastMessagePartEnd:
-	movzx rdi, dl
-	shl rdi, 56
-	or rax, rdi
+Last0_2_4:
 	xor r9, rax
 	RepeatSipRound 2
 	xor r10, rax
-
 ; FINALIZATION
 	xor r8, 0FFh
 	RepeatSipRound 4
@@ -119,28 +149,42 @@ MessageLoadLoop:
 	jnz MessageLoadLoop
 
 MessageLoadLoopEnd:
-	xor rax, rax	; rax = 0
-	mov rsi, rdx
-	and rsi, 7		; rsi = mess_len % 8
-	je LastMessagePartEnd
-	add rcx, rsi
-
-LastMessagePart:
-	dec rcx
+	mov rax, rdx
+	shl rax, 56
+	and rdx, 7
+	jmp qword ptr [JumpTable_4_8 + rdx*8]
+Last7_4_8:
+	movzx rdi, byte ptr [rcx + 6]
+	shl rdi, 48
+	or rax, rdi
+Last6_4_8:
+	movzx rdi, byte ptr [rcx + 5]
+	shl rdi, 40
+	or rax, rdi
+Last5_4_8:
+	movzx rdi, byte ptr [rcx + 4]
+	shl rdi, 32
+	or rax, rdi
+Last4_4_8:
+	movzx rdi, byte ptr [rcx + 3]
+	shl rdi, 24
+	or rax, rdi
+Last3_4_8:
+	movzx rdi, byte ptr [rcx + 2]
+	shl rdi, 16
+	or rax, rdi
+Last2_4_8:
+	movzx rdi, byte ptr [rcx + 1]
+	shl rdi, 8
+	or rax, rdi
+Last1_4_8:
 	movzx rdi, byte ptr [rcx]
-	shl rax, 8
 	or rax, rdi
-	dec rsi
-	jnz LastMessagePart
-
-LastMessagePartEnd:
-	movzx rdi, dl
-	shl rdi, 56
-	or rax, rdi
+Last0_4_8:
 	xor r9, rax
 	RepeatSipRound 4
 	xor r10, rax
-
+	
 ; FINALIZATION
 	xor r8, 0FFh
 	RepeatSipRound 8

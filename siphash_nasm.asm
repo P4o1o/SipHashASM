@@ -1,3 +1,35 @@
+section .note.GNU-stack note
+	align 4
+    dd 1, 0, 0
+    db "GNU",0
+    align 4
+
+bits 64
+
+section .data
+
+align 8
+JumpTable_2_4:
+	dq Last0_2_4
+	dq Last1_2_4
+	dq Last2_2_4
+	dq Last3_2_4
+	dq Last4_2_4
+	dq Last5_2_4
+	dq Last6_2_4
+	dq Last7_2_4
+
+align 8
+JumpTable_4_8:
+	dq Last0_4_8
+	dq Last1_4_8
+	dq Last2_4_8
+	dq Last3_4_8
+	dq Last4_4_8
+	dq Last5_4_8
+	dq Last6_4_8
+	dq Last7_4_8
+
 section .text
 global siphash_2_4
 global siphash_4_8
@@ -53,29 +85,43 @@ MessageLoadLoop_2_4:
 	jnz MessageLoadLoop_2_4
 
 MessageLoadLoopEnd_2_4:
-	xor rax, rax	; rax = 0
-	mov rdx, rsi
-	and rdx, 7		; rdx = mess_len % 8
-	je LastMessagePartEnd_2_4
-	add rdi, rdx
-
-LastMessagePart_2_4:
-	dec rdi
+	mov rax, rsi
+	shl rax, 56
+	and rsi, 7		; rsi = mess_len % 8
+	lea rdx, [rel JumpTable_2_4]
+	jmp qword [rdx + rsi*8]
+Last7_2_4:
+	movzx rcx, byte [rdi + 6]
+	shl rcx, 48
+	or rax, rcx
+Last6_2_4:
+	movzx rcx, byte [rdi + 5]
+	shl rcx, 40
+	or rax, rcx
+Last5_2_4:
+	movzx rcx, byte [rdi + 4]
+	shl rcx, 32
+	or rax, rcx
+Last4_2_4:
+	movzx rcx, byte [rdi + 3]
+	shl rcx, 24
+	or rax, rcx
+Last3_2_4:
+	movzx rcx, byte [rdi + 2]
+	shl rcx, 16
+	or rax, rcx
+Last2_2_4:
+	movzx rcx, byte [rdi + 1]
+	shl rcx, 8
+	or rax, rcx
+Last1_2_4:
 	movzx rcx, byte [rdi]
-	shl rax, 8
 	or rax, rcx
-	dec rdx
-	jnz LastMessagePart_2_4
-
-LastMessagePartEnd_2_4:
-	movzx rcx, sil
-	shl rcx, 56
-	or rax, rcx
+Last0_2_4:
 	xor r9, rax
 	SipRound
 	SipRound
 	xor r10, rax
-
 ; FINALIZATION
 	xor r8, 0FFh
 	SipRound
@@ -112,24 +158,39 @@ MessageLoadLoop_4_8:
 	jnz MessageLoadLoop_4_8
 
 MessageLoadLoopEnd_4_8:
-	xor rax, rax	; rax = 0
-	mov rdx, rsi
-	and rdx, 7		; rdx = mess_len % 8
-	je LastMessagePartEnd_4_8
-	add rdi, rdx
-
-LastMessagePart_4_8:
-	dec rdi
+	mov rax, rsi
+	shl rax, 56
+	and rsi, 7		; rsi = mess_len % 8
+	lea rdx, [rel JumpTable_4_8]
+	jmp qword [rdx + rsi*8]
+Last7_4_8:
+	movzx rcx, byte [rdi + 6]
+	shl rcx, 48
+	or rax, rcx
+Last6_4_8:
+	movzx rcx, byte [rdi + 5]
+	shl rcx, 40
+	or rax, rcx
+Last5_4_8:
+	movzx rcx, byte [rdi + 4]
+	shl rcx, 32
+	or rax, rcx
+Last4_4_8:
+	movzx rcx, byte [rdi + 3]
+	shl rcx, 24
+	or rax, rcx
+Last3_4_8:
+	movzx rcx, byte [rdi + 2]
+	shl rcx, 16
+	or rax, rcx
+Last2_4_8:
+	movzx rcx, byte [rdi + 1]
+	shl rcx, 8
+	or rax, rcx
+Last1_4_8:
 	movzx rcx, byte [rdi]
-	shl rax, 8
 	or rax, rcx
-	dec rdx
-	jnz LastMessagePart_4_8
-
-LastMessagePartEnd_4_8:
-	movzx rcx, sil
-	shl rcx, 56
-	or rax, rcx
+Last0_4_8:
 	xor r9, rax
 	SipRound
 	SipRound

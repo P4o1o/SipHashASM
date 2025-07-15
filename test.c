@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include "siphash.h"
 
 #define vectoqword(vec) (((uint64_t)vec[7] << 56) | ((uint64_t)vec[6] << 48) | ((uint64_t)vec[5] << 40) | ((uint64_t)vec[4] << 32) | ((uint64_t)vec[3] << 24) | ((uint64_t)vec[2] << 16) | ((uint64_t)vec[1] << 8) | (uint64_t)vec[0])
@@ -652,7 +651,6 @@ const uint8_t vectors_sip64[64][8] = {
 };
 
 int main() {
-    bool any_failed = false;
     uint64_t fails = 0;
     uint8_t **in = malloc(sizeof(uint8_t *) * 64);
     if (in == NULL)
@@ -670,7 +668,6 @@ int main() {
         if (res != vectoqword(vectors_sip64[i])) {
             printf("fail for vector %d\n", i);
             fails++;
-            any_failed = true;
         }
     }
     if (!fails)
