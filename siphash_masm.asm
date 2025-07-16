@@ -103,7 +103,7 @@ Last3_2_4:
 	movzx rdi, byte ptr [rcx + 2]
 	shl rdi, 16
 	or rax, rdi
-Last2_2_4:Example Usage (from C)
+Last2_2_4:
 	movzx rdi, byte ptr [rcx + 1]
 	shl rdi, 8
 	or rax, rdi
